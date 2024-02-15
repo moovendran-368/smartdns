@@ -1,0 +1,33 @@
+services:
+  encrypt:
+    container_name: tariq-encrypt
+    restart: always
+    networks:
+      tariq-net:
+    build:
+      dockerfile: nginx.Dockerfile
+    ports:
+      - 853:853
+      - 4443:4443
+    volumes:
+      - ${cert}:/ssl/cert.pem
+      - ${key}:/ssl/key.pem
+  doh:
+    container_name: tariq-doh
+    restart: always
+    # ports:
+    #   - '8053:8053'
+    environment:
+      - 'UPSTREAM_DNS_SERVER=udp:tariq:53'
+      - DOH_HTTP_PREFIX=/dns-query
+      - 'DOH_SERVER_LISTEN=:8053'
+      - DOH_SERVER_TIMEOUT=10
+      - DOH_SERVER_TRIES=3
+      - DOH_SERVER_VERBOSE=false
+    image: satishweb/doh-server:latest
+    networks:
+      tariq-net:
+
+networks:
+  tariq-net: 
+    external: true
